@@ -1,0 +1,13 @@
+{
+  "name": "hcs-cam",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PWA camera with Hasselblad-inspired colour rendering for iPhone",
+  "type": "module",
+  "scripts": {
+    "start": "npx http-server . -p 8080 -c-1",
+    "icons": "node tools/make-icons.mjs",
+    "test": "node tests/lenses.test.mjs && node tests/smoke.mjs"
+  },
+  "license": "MIT"
+}

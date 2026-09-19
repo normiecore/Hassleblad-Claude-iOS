@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en" data-build="__BUILD__">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <title>HCS Cam</title>
+  <meta name="description" content="Camera with Hasselblad-inspired colour rendering for iPhone. Add to Home Screen from Safari. Unofficial; not affiliated with Hasselblad.">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#000000">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="HCS Cam">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="./css/app.css">
+  <script type="module" src="./js/app.js"></script>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z" fill="currentColor"/></symbol>
+      <symbol id="i-grid" viewBox="0 0 24 24"><path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke="currentColor" stroke-width="1.8" fill="none"/></symbol>
+      <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M12 9v4l3 2M9 2h6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></symbol>
+      <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="16" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="17" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+      <symbol id="i-import" viewBox="0 0 24 24"><path d="M12 3v11M7.5 9.5 12 14l4.5-4.5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+      <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    </defs>
+  </svg>
+
+  <main class="app" id="app">
+    <header class="topbar">
+      <button id="btn-torch" class="icon-btn" type="button" aria-label="Torch" aria-pressed="false" hidden>
+        <svg><use href="#i-bolt"/></svg>
+      </button>
+      <button id="btn-timer" class="icon-btn" type="button" aria-label="Self timer" data-value="0">
+        <svg><use href="#i-timer"/></svg><span class="tag" id="timer-tag" hidden>3s</span>
+      </button>
+      <button id="btn-aspect" class="text-btn" type="button" aria-label="Aspect ratio">4:3</button>
+      <button id="btn-grid" class="icon-btn" type="button" aria-label="Composition grid" aria-pressed="false">
+        <svg><use href="#i-grid"/></svg>
+      </button>
+      <button id="btn-settings" class="icon-btn" type="button" aria-label="Look and settings">
+        <svg><use href="#i-sliders"/></svg>
+      </button>
+    </header>
+
+    <section class="viewfinder" id="viewfinder">
+      <video id="video" playsinline muted autoplay></video>
+      <div class="frame" id="frame">
+        <canvas id="preview" aria-label="Camera preview"></canvas>
+        <div class="grid-overlay" id="grid" hidden></div>
+        <div class="badge badge-zoom" id="zoom-badge" hidden>1×</div>
+        <div class="badge badge-note" id="lens-note" hidden></div>
+        <div class="countdown" id="countdown" hidden></div>
+        <div class="flash" id="flash"></div>
+      </div>
+      <div class="status" id="status" role="status">Starting camera…</div>
+    </section>
+
+    <nav class="lenses" aria-label="Camera">
+      <button type="button" data-lens="uw" aria-pressed="false"><span>0.5</span></button>
+      <button type="button" data-lens="wide" aria-pressed="true"><span>1</span></button>
+      <button type="button" data-lens="tele" aria-pressed="false"><span>4</span></button>
+      <button type="button" data-lens="front" aria-pressed="false" class="wide"><span>Front</span></button>
+    </nav>
+
+    <footer class="controls">
+      <button id="btn-gallery" class="thumb" type="button" aria-label="Camera roll">
+        <img id="thumb-img" alt="" hidden>
+        <span class="thumb-count" id="thumb-count" hidden></span>
+      </button>
+      <button id="btn-shutter" class="shutter" type="button" aria-label="Take photo"><span></span></button>
+      <label class="icon-btn round" for="file-input" aria-label="Import a photo to grade">
+        <svg><use href="#i-import"/></svg>
+        <input type="file" id="file-input" accept="image/*" hidden>
+      </label>
+    </footer>
+  </main>
+
+  <dialog id="sheet-settings" class="sheet" aria-labelledby="settings-title">
+    <div class="sheet-handle"></div>
+    <header class="sheet-header">
+      <h2 id="settings-title">Look</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Close"><svg><use href="#i-close"/></svg></button>
+    </header>
+    <div class="sheet-body">
+      <div class="segmented" id="look-picker" role="radiogroup" aria-label="Look"></div>
+      <p class="hint" id="look-description"></p>
+
+      <label class="row">
+        <span>Strength</span>
+        <input type="range" id="strength" min="0" max="100" step="1" value="100">
+        <output id="strength-out">100%</output>
+      </label>
+
+      <label class="row">
+        <span>Exposure</span>
+        <input type="range" id="ev-soft" min="-2" max="2" step="0.333" value="0">
+        <output id="ev-soft-out">0 EV</output>
+      </label>
+
+      <label class="row" id="ev-native-row" hidden>
+        <span>Camera EV</span>
+        <input type="range" id="ev-native" min="-2" max="2" step="0.333" value="0">
+        <output id="ev-native-out">0 EV</output>
+      </label>
+
+      <h3>Camera</h3>
+      <dl class="facts" id="facts"></dl>
+
+      <h3>About</h3>
+      <p class="hint">
+        HCS Cam grades the live camera feed with a colour pipeline modelled on the character of Hasselblad's
+        Natural Colour Solution: faithful hues, natural skin, restrained greens and a smooth highlight roll-off.
+        It is an independent interpretation, not Hasselblad software, and is not affiliated with Hasselblad.
+      </p>
+      <p class="hint" id="install-hint" hidden>
+        To install: tap Share in Safari, then <strong>Add to Home Screen</strong>.
+      </p>
+      <p class="hint version">Build <span id="build-id">dev</span></p>
+    </div>
+  </dialog>
+
+  <dialog id="sheet-gallery" class="sheet full" aria-labelledby="gallery-title">
+    <header class="sheet-header">
+      <h2 id="gallery-title">Camera roll</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Close"><svg><use href="#i-close"/></svg></button>
+    </header>
+    <div class="sheet-body">
+      <p class="hint">Photos stay on this device until you save them to Photos with Share.</p>
+      <div class="gallery-grid" id="gallery-grid"></div>
+      <p class="hint empty" id="gallery-empty" hidden>Nothing here yet.</p>
+    </div>
+  </dialog>
+
+  <dialog id="viewer" class="viewer" aria-label="Photo">
+    <header class="viewer-bar">
+      <button class="icon-btn" type="button" id="viewer-back" aria-label="Back"><svg><use href="#i-back"/></svg></button>
+      <span class="viewer-meta" id="viewer-meta"></span>
+    </header>
+    <img id="viewer-img" alt="Captured photo">
+    <footer class="viewer-actions">
+      <button class="pill" type="button" id="viewer-share"><svg><use href="#i-share"/></svg>Save to Photos</button>
+      <button class="pill danger" type="button" id="viewer-delete"><svg><use href="#i-trash"/></svg>Delete</button>
+    </footer>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden>
+    <span id="toast-text"></span>
+    <button type="button" id="toast-action" hidden></button>
+  </div>
+</body>
+</html>

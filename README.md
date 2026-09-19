@@ -89,11 +89,12 @@ Camera access requires a secure context: `localhost` or HTTPS.
 ## Deployment
 
 `.github/workflows/pages.yml` deploys the repository root to GitHub Pages with the official Pages actions on
-every push to `main`, and can also be run manually from the Actions tab. The workflow enables Pages on the
-repository the first time it runs, and stamps the commit SHA into the service worker so installed apps pick up
-new versions (a toast offers to reload).
+every push to `main`, and can also be run manually from the Actions tab. It stamps the commit SHA into the
+service worker and page so installed apps pick up new versions (a toast offers to reload).
 
-If Pages does not activate automatically, open **Settings → Pages** and set the source to **GitHub Actions**.
+**One-time setup**: the Actions token is not allowed to create the Pages site itself, so before the first
+deploy open **Settings → Pages** and set **Source** to **GitHub Actions**. Then re-run the failed
+"Deploy to GitHub Pages" run from the Actions tab (or push again). Every later push deploys automatically.
 
 ## Project layout
 
